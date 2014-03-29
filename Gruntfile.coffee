@@ -1,15 +1,18 @@
 path = require 'path'
 
+CONST =
+	settings:
+		distDirectory: 'dist'
+		srcDirectory: 'src'
+		tempDirectory: 'temp'
+
 # Build configurations
 module.exports = (grunt) ->
 	require('load-grunt-tasks')(grunt)
 	require('time-grunt')(grunt)
 
 	grunt.initConfig
-		settings:
-			distDirectory: 'dist'
-			srcDirectory: 'src'
-			tempDirectory: '.temp'
+		settings: CONST.settings
 
 		# Gets dependent components from bower
 		# see bower.json file
@@ -37,13 +40,6 @@ module.exports = (grunt) ->
 				'<%= settings.tempDirectory %>'
 				'<%= settings.distDirectory %>'
 			]
-			# Used for those that desire plain old JavaScript
-			jslove: [
-				'**/*.coffee'
-				'!**/.temp/**'
-				'!**/bower_components/**'
-				'!**/node_modules/**'
-			]
 
 		# Compiles CoffeeScript (.coffee) files to JavaScript (.js)
 		coffee:
@@ -56,16 +52,7 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 				options:
-					sourceMap: true
-			# Used for those that desire plain old JavaScript
-			jslove:
-				files: [
-					cwd: ''
-					src: '<%= clean.jslove %>'
-					dest: ''
-					expand: true
-					ext: '.js'
-				]
+					sourceMap: false
 
 		# Lints CoffeeScript files
 		coffeelint:
@@ -93,7 +80,7 @@ module.exports = (grunt) ->
 					livereload: true
 					middleware: require './middleware'
 					open: true
-					port: 0
+					port: 8089
 
 		# Copies directories and files from one location to another
 		copy:
@@ -136,15 +123,15 @@ module.exports = (grunt) ->
 		# glyphicons-halflings.png -> glyphicons-halflings.6c8829cc6f.png
 		# scripts.min.js -> scripts.min.6c355e03ee.js
 		hash:
-			images: '.temp/**/*.{gif,jpeg,jpg,png,svg,webp}'
+			images: '<%= settings.tempDirectory %>/**/*.{gif,jpeg,jpg,png,svg,webp}'
 			scripts:
-				cwd: '.temp/scripts'
+				cwd: '<%= settings.tempDirectory %>/scripts'
 				src: [
 					'ie.min.js'
 					'scripts.min.js'
 				]
 				expand: true
-			styles: '.temp/styles/styles.min.css'
+			styles: '<%= settings.tempDirectory %>/styles/styles.min.css'
 
 		# Compresses png files
 		imagemin:
@@ -187,9 +174,9 @@ module.exports = (grunt) ->
 					captureTimeout: 5000
 					colors: true
 					files: [
-						'dist/scripts/libs/angular.js'
-						'dist/scripts/libs/angular-animate.js'
-						'dist/scripts/libs/angular-route.js'
+						'dist/scripts/libs/angular.min.js'
+						'dist/scripts/libs/angular-animate.min.js'
+						'dist/scripts/libs/angular-route.min.js'
 						'bower_components/scripts/libs/angular-mocks.js'
 						'dist/**/*.js'
 						'test/**/*.{coffee,js}'
@@ -197,8 +184,6 @@ module.exports = (grunt) ->
 					frameworks: [
 						'jasmine'
 					]
-					junitReporter:
-						outputFile: 'test-results.xml'
 					keepalive: false
 					logLevel: 'INFO'
 					port: 9876
@@ -206,7 +191,6 @@ module.exports = (grunt) ->
 						'**/*.coffee': 'coffee'
 					reporters: [
 						'dots'
-						'junit'
 						'progress'
 					]
 					runnerPort: 9100
@@ -215,8 +199,10 @@ module.exports = (grunt) ->
 		# Compile LESS (.less) files to CSS (.css)
 		less:
 			app:
-				files:
-					'.temp/styles/styles.css': '.temp/styles/styles.less'
+				files: do ->
+					files = {}
+					files["#{CONST.settings.tempDirectory}/styles/styles.css"] = '<%= settings.tempDirectory %>/styles/styles.less'
+					files
 
 		# Minifies index.html
 		# Extra white space and comments will be removed
@@ -225,7 +211,7 @@ module.exports = (grunt) ->
 		# Reduces file size by over 14%
 		minifyHtml:
 			prod:
-				src: '.temp/index.html'
+				src: '<%= settings.tempDirectory %>/index.html'
 				ext: '.html'
 				expand: true
 
@@ -245,29 +231,13 @@ module.exports = (grunt) ->
 		# Notice that the view content is actually minified.  :)
 		ngTemplateCache:
 			views:
-				files:
-					'.temp/scripts/views.js': '.temp/**/*.html'
+				files: do ->
+					files = {}
+					files["#{CONST.settings.tempDirectory}/scripts/views.js"] = '<%= settings.tempDirectory %>/**/*.html'
+					files
+
 				options:
 					trim: '<%= settings.tempDirectory %>'
-
-		prompt:
-			jslove:
-				options:
-					questions: [
-						{
-							config: 'coffee.jslove.compile'
-							type: 'input'
-							message: 'Are you sure you wish to convert all CoffeeScript (.coffee) files to JavaScript (.js)?' + '\n' + 'This cannot be undone.'.red + ': (y/N)'
-							default: false
-							filter: (input) ->
-								confirmed = /^y(es)?/i.test input
-
-								if not confirmed
-									grunt.fatal 'exiting jslove'
-
-								return confirmed
-						}
-					]
 
 		# RequireJS optimizer configuration for both scripts and styles
 		# This configuration is only used in the 'prod' build
@@ -278,10 +248,10 @@ module.exports = (grunt) ->
 		requirejs:
 			scripts:
 				options:
-					baseUrl: '.temp/scripts'
+					baseUrl: '<%= settings.tempDirectory %>/scripts'
 					findNestedDependencies: true
 					logLevel: 0
-					mainConfigFile: '.temp/scripts/main.js'
+					mainConfigFile: '<%= settings.tempDirectory %>/scripts/main.js'
 					name: 'main'
 					# Exclude main from the final output to avoid the dependency on RequireJS at runtime
 					onBuildWrite: (moduleName, path, contents) ->
@@ -292,7 +262,7 @@ module.exports = (grunt) ->
 
 						contents
 					optimize: 'uglify2'
-					out: '.temp/scripts/scripts.min.js'
+					out: '<%= settings.tempDirectory %>/scripts/scripts.min.js'
 					preserveLicenseComments: false
 					skipModuleInsertion: true
 					uglify:
@@ -300,20 +270,20 @@ module.exports = (grunt) ->
 						no_mangle: false
 					useStrict: true
 					wrap:
-						start: '(function(){\'use strict\';'
-						end: '}).call(this);'
+						start: "(function(){'use strict';"
+						end: "}).call(this);"
 			styles:
 				options:
-					baseUrl: '.temp/styles/'
-					cssIn: '.temp/styles/styles.css'
+					baseUrl: '<%= settings.tempDirectory %>/styles/'
+					cssIn: '<%= settings.tempDirectory %>/styles/styles.css'
 					logLevel: 0
 					optimizeCss: 'standard'
-					out: '.temp/styles/styles.min.css'
+					out: '<%= settings.tempDirectory %>/styles/styles.min.css'
 
 		# Creates main file for RequireJS
 		shimmer:
 			dev:
-				cwd: '.temp/scripts'
+				cwd: '<%= settings.tempDirectory %>/scripts'
 				src: [
 					'**/*.{coffee,js}'
 					'!libs/angular.{coffee,js}'
@@ -365,9 +335,12 @@ module.exports = (grunt) ->
 		# <% } %>
 		template:
 			indexDev:
-				files:
-					'.temp/index.html': '.temp/index.html'
-					'.temp/index.jade': '.temp/index.jade'
+				files: do ->
+					files = {}
+					files["#{CONST.settings.tempDirectory}/index.html"] = '<%= settings.tempDirectory %>/index.html'
+					files["#{CONST.settings.tempDirectory}/index.jade"] = '<%= settings.tempDirectory %>/index.jade'
+					files
+
 			index:
 				files: '<%= template.indexDev.files %>'
 				environment: 'prod'
@@ -375,11 +348,13 @@ module.exports = (grunt) ->
 		# Concatenates and minifies JavaScript files
 		uglify:
 			scripts:
-				files:
-					'.temp/scripts/ie.min.js': [
-						'.temp/scripts/libs/json3.js'
-						'.temp/scripts/libs/html5shiv-printshiv.js'
+				files: do ->
+					files = {}
+					files["#{CONST.settings.tempDirectory}/scripts/ie.min.js"] = [
+						'<%= settings.tempDirectory %>/scripts/libs/json3.js'
+						'<%= settings.tempDirectory %>/scripts/libs/html5shiv-printshiv.js'
 					]
+					files
 
 		# Run tasks when monitored files change
 		watch:
@@ -479,7 +454,7 @@ module.exports = (grunt) ->
 		grunt.config ['copy', 'app'],
 			cwd: 'src/'
 			src: file
-			dest: '.temp/'
+			dest: '<%= settings.tempDirectory %>/'
 			expand: true
 
 		copyDevConfig = grunt.config ['copy', 'dev']
@@ -489,7 +464,7 @@ module.exports = (grunt) ->
 			# delete associated temp file prior to performing remaining tasks
 			# without doing so, shimmer may fail
 			grunt.config ['clean', 'working'], [
-				path.join('.temp', dirname, "#{basename}.{coffee,js,js.map}")
+				path.join('temp', dirname, "#{basename}.{coffee,js,js.map}")
 			]
 
 			copyDevConfig.src = [
@@ -505,17 +480,17 @@ module.exports = (grunt) ->
 			grunt.config ['coffee', 'app', 'files'], coffeeConfig
 			grunt.config ['coffeelint', 'app', 'files'], coffeeLintConfig
 
-		if key is 'spaJade'
+		else if key is 'spaJade'
 			copyDevConfig.src = path.join(dirname, "#{basename}.{jade,html}")
 
-		if key is 'jade'
+		else if key is 'jade'
 			copyDevConfig.src = path.join(dirname, "#{basename}.{jade,html}")
 			jadeConfig = grunt.config ['jade', 'views']
 			jadeConfig.src = file
 
 			grunt.config ['jade', 'views'], jadeConfig
 
-		if key is 'less'
+		else if key is 'less'
 			copyDevConfig.src = [
 				path.join(dirname, "#{basename}.{less,css}")
 				path.join(dirname, 'styles.css')
@@ -606,12 +581,3 @@ module.exports = (grunt) ->
 		'karma'
 	]
 
-	# Compiles all CoffeeScript files in the project to JavaScript then deletes all CoffeeScript files
-	# Used for those that desire plain old JavaScript
-	# Enter the following command at the command line to execute this build task:
-	# grunt jslove
-	grunt.registerTask 'jslove', [
-		'prompt:jslove'
-		'coffee:jslove'
-		'clean:jslove'
-	]
