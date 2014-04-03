@@ -4,7 +4,7 @@ CONST =
 	settings:
 		distDirectory: 'dist'
 		srcDirectory: 'src'
-		tempDirectory: 'temp'
+		tempDirectory: '.temp'
 
 # Build configurations
 module.exports = (grunt) ->
@@ -21,9 +21,9 @@ module.exports = (grunt) ->
 				options:
 					cleanTargetDir: true
 					copy: true
-					layout: (type, component) ->
-						path.join type
+					layout: (type, component) -> path.join type
 					targetDir: 'bower_components'
+					verbose: true
 			uninstall:
 				options:
 					cleanBowerDir: true
@@ -177,9 +177,10 @@ module.exports = (grunt) ->
 						'dist/scripts/libs/angular.min.js'
 						'dist/scripts/libs/angular-animate.min.js'
 						'dist/scripts/libs/angular-route.min.js'
+						'dist/scripts/libs/indexeddb.js'
 						'bower_components/scripts/libs/angular-mocks.js'
 						'dist/**/*.js'
-						'test/**/*.{coffee,js}'
+						"test/**/*.{coffee,js}"
 					]
 					frameworks: [
 						'jasmine'
@@ -189,6 +190,7 @@ module.exports = (grunt) ->
 					port: 9876
 					preprocessors:
 						'**/*.coffee': 'coffee'
+
 					reporters: [
 						'dots'
 						'progress'
@@ -256,9 +258,8 @@ module.exports = (grunt) ->
 					# Exclude main from the final output to avoid the dependency on RequireJS at runtime
 					onBuildWrite: (moduleName, path, contents) ->
 						modulesToExclude = ['main']
-						shouldExcludeModule = modulesToExclude.indexOf(moduleName) >= 0
-
-						return '' if shouldExcludeModule
+						if modulesToExclude.indexOf(moduleName) >= 0
+							return ''
 
 						contents
 					optimize: 'uglify2'
@@ -286,19 +287,14 @@ module.exports = (grunt) ->
 				cwd: '<%= settings.tempDirectory %>/scripts'
 				src: [
 					'**/*.{coffee,js}'
-					'!libs/angular.{coffee,js}'
-					'!libs/angular-animate.{coffee,js}'
-					'!libs/angular-route.{coffee,js}'
-					'!libs/html5shiv-printshiv.{coffee,js}'
-					'!libs/json3.min.{coffee,js}'
-					'!libs/require.{coffee,js}'
 				]
 				order: [
 					'libs/angular.min.js'
 					'NGAPP':
-						'ngAnimate': 'libs/angular-animate.min.js'
+						"xc.indexedDB": "libs/indexeddb.js"
+						'ngAnimate': 'libs/angular-animate.js'
 						'ngMockE2E': 'libs/angular-mocks.js'
-						'ngRoute': 'libs/angular-route.min.js'
+						'ngRoute': 'libs/angular-route.js'
 				]
 				require: 'NGBOOTSTRAP'
 			prod:
@@ -319,6 +315,7 @@ module.exports = (grunt) ->
 					'NGAPP':
 						'ngAnimate': 'libs/angular-animate.min.js'
 						'ngRoute': 'libs/angular-route.min.js'
+						"indexedDb" : "libs/indexeddb.js"
 				]
 				require: '<%= shimmer.dev.require %>'
 
@@ -464,7 +461,7 @@ module.exports = (grunt) ->
 			# delete associated temp file prior to performing remaining tasks
 			# without doing so, shimmer may fail
 			grunt.config ['clean', 'working'], [
-				path.join('temp', dirname, "#{basename}.{coffee,js,js.map}")
+				path.join(CONST.settings.tempDirectory, dirname, "#{basename}.{coffee,js,js.map}")
 			]
 
 			copyDevConfig.src = [

@@ -1,44 +1,48 @@
 {
-	"name": "app",
-	"version": "0.0.0",
-	"dependencies": {
-		"angular": "1.2.x",
-		"angular-animate": "1.2.x",
-		"angular-mocks": "1.2.x",
-		"angular-route": "1.2.x",
-		"bootstrap": "3.x",
-		"html5shiv": "3.7.0",
-		"json3": "3.x",
-		"requirejs": "2.1.x"
-	},
-	"exportsOverride": {
-		"angular": {
-			"scripts/libs": "angular.min.js{,.map}"
-		},
-		"angular-animate": {
-			"scripts/libs": "angular-animate.min.js{,.map}"
-		},
-		"angular-mocks": {
-			"scripts/libs": "angular-mocks.js"
-		},
-		"angular-route": {
-			"scripts/libs": "angular-route.min.js{,.map}"
-		},
-		"bootstrap": {
-			"fonts": "dist/fonts/*.{eot,svg,ttf,woff}",
-			"styles": "less/*.less"
-		},
-		"html5shiv": {
-			"scripts/libs": "dist/html5shiv-printshiv.js"
-		},
-		"jquery": {
-			"scripts/libs": "none"
-		},
-		"json3": {
-			"scripts/libs": "lib/json3.min.js"
-		},
-		"requirejs": {
-			"scripts/libs": "require.js"
-		}
-	}
+  "name": "app",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular": "1.2.x",
+    "angular-animate": "1.2.x",
+    "angular-mocks": "1.2.x",
+    "angular-route": "1.2.x",
+    "bootstrap": "3.x",
+    "html5shiv": "3.7.0",
+    "json3": "3.x",
+    "requirejs": "2.1.x",
+    "angularjs-indexedDB": "*"
+  },
+  "exportsOverride": {
+    "angular": {
+      "scripts/libs": "angular.min.js{,.map}"
+    },
+    "angular-animate": {
+      "scripts/libs": "angular-animate.js{,.map}"
+    },
+    "angular-mocks": {
+      "scripts/libs": "angular-mocks.js"
+    },
+    "angularjs-indexedDB" : {
+      "scripts/libs": "src/indexeddb.js"
+    },
+    "angular-route": {
+      "scripts/libs": "angular-route.js{,.map}"
+    },
+    "bootstrap": {
+      "fonts": "dist/fonts/*.{eot,svg,ttf,woff}",
+      "styles": "less/*.less"
+    },
+    "html5shiv": {
+      "scripts/libs": "dist/html5shiv-printshiv.js"
+    },
+    "jquery": {
+      "scripts/libs": "none"
+    },
+    "json3": {
+      "scripts/libs": "lib/json3.min.js"
+    },
+    "requirejs": {
+      "scripts/libs": "require.js"
+    }
+  }
 }
